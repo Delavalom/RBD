@@ -14,11 +14,11 @@ jobs:
 
     services:
         postgres:
-            image: postgres:12
+            image: postgres:14-alpine
             env:
                 POSTGRES_USER: root
                 POSTGRES_PASSWORD: secret
-                POSTGRES_DB: RBD
+                POSTGRES_DB: rdb
             ports:
                 - 5432:5432
             options: >-
