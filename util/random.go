@@ -37,12 +37,12 @@ func RandomBalance() int64 {
 
 // RandomCurrency generates a random currency code
 func RandomCurrency() string {
-	currencies := []string{"DOP", "USD", "EUR"}
+	currencies := []string{DOP, USD, EUR}
 	n := len(currencies)
 	return currencies[rand.Intn(n)]
 }
 
 // RandomMoney generates a random amount for entries
 func RandomMoney() int64 {
-	return RandomInt(0, 1000)
+	return RandomInt(100, 1000)
 }
