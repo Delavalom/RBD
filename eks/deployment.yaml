@@ -17,5 +17,6 @@ spec:
       containers:
       - name: rbd-api
         image: 669669085884.dkr.ecr.us-east-1.amazonaws.com/delavalom:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
