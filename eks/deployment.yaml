@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rbd-api-deployment
+  labels:
+    app: rbd-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rbd-api
+  template:
+    metadata:
+      labels:
+        app: rbd-api
+    spec:
+      containers:
+      - name: rbd-api
+        image: 669669085884.dkr.ecr.us-east-1.amazonaws.com/delavalom:latest
+        ports:
+        - containerPort: 8080
