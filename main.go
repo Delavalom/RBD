@@ -10,11 +10,9 @@ import (
 	db "github.com/Delavalom/RBD/db/sqlc"
 	"github.com/Delavalom/RBD/gapi"
 	"github.com/Delavalom/RBD/pb"
-	_ "github.com/Delavalom/RBD/public/docs/statik"
 	"github.com/Delavalom/RBD/util"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rakyll/statik/fs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -82,14 +80,6 @@ func runGatewayServer(config util.Config, store db.Store) {
 
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcMux)
-
-	statikFS, err := fs.New()
-	if err != nil {
-		log.Fatal("cannot create statik fs: ", err)
-	}
-
-	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
-	mux.Handle("/swagger/", swaggerHandler)
 
 	listener, err := net.Listen("tcp", config.HTTPServerAddress)
 	if err != nil {
