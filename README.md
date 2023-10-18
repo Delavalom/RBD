@@ -6,6 +6,8 @@ La primera infraestructura bancaria open-source de la Republica Dominicana.
 
 Este proyecto es una iniciativa para tener un standard de desarrollo, construir interoperabilidad e impulsar la tecnología bancaria en la Republica Dominicana.
 
+## Configuración de desarrollo local
+
 ### Como generar codigo
 
 - Genera un SQL CRUD con sqlc:
