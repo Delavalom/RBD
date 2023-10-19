@@ -12,7 +12,7 @@ var (
 )
 
 type Validator interface {
-	ValidateString(value string, minLength int, maxLength int) error
+	ValidateString(value string, minLength, maxLength int) error
 	ValidateUsername(value string) error
 	ValidateFullName(value string) error
 	ValidatePassword(value string) error
@@ -25,7 +25,7 @@ func NewValidator() Validator {
 	return &Fields{}
 }
 
-func (*Fields) ValidateString(value string, minLength int, maxLength int) error {
+func (*Fields) ValidateString(value string, minLength, maxLength int) error {
 	n := len(value)
 	if n < minLength || n > maxLength {
 		return fmt.Errorf("must contain from %d-%d characters", minLength, maxLength)
