@@ -11,6 +11,7 @@ require (
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/o1egl/paseto v1.0.0
 	github.com/rakyll/statik v0.1.7
+	github.com/rs/zerolog v1.31.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
 	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
@@ -26,6 +27,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/lib/pq v1.10.2 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	google.golang.org/genproto v0.0.0-20230803162519-f966b187b2e5 // indirect
