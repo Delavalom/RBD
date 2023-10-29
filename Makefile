@@ -1,12 +1,12 @@
 #!make
-DB_SOURCE=postgresql://root:secret@localhost:5432/rdb?sslmode=disable
+DB_SOURCE=postgresql://root:secret@localhost:5432/rbd?sslmode=disable
 
 postgres:
 	docker run --name postgres --network bank-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:14-alpine
 createdb:
 	docker exec -it postgres createdb --username=root --owner=root rbd
 dropdb:
-	docker exec -it postgres dropdb rdb
+	docker exec -it postgres dropdb rbd
 
 migrateup:
 	migrate -path db/migrations -database "$(DB_SOURCE)" -verbose up
