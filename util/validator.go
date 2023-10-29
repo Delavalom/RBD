@@ -17,6 +17,8 @@ type Validator interface {
 	ValidateFullName(value string) error
 	ValidatePassword(value string) error
 	ValidateEmail(value string) error
+	ValidateEmailId(value int64) error
+	ValidateSecretCode(value string) error
 }
 
 type Fields struct{}
@@ -65,4 +67,15 @@ func (fields *Fields) ValidateEmail(value string) error {
 		return fmt.Errorf("is not a valid email address")
 	}
 	return nil
+}
+
+func (fields *Fields) ValidateEmailId(value int64) error {
+	if value <= 0 {
+		return fmt.Errorf("must be a positive interger")
+	}
+	return nil
+}
+
+func (fields *Fields) ValidateSecretCode(value string) error {
+	return fields.ValidateString(value, 32, 64)
 }

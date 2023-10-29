@@ -14,12 +14,12 @@ migratedown:
 	migrate -path db/migrations -database "$(DB_SOURCE)" -verbose down
 
 migrateup1:
-	migrate -path db/migrations -database "$(DB_SOURCE)" -verbose up1
+	migrate -path db/migrations -database "$(DB_SOURCE)" -verbose up 1
 migratedown1:
-	migrate -path db/migrations -database "$(DB_SOURCE)" -verbose down1
+	migrate -path db/migrations -database "$(DB_SOURCE)" -verbose down 1
 
 new_migration:
-	migrate create -ext sql -dir db/migration -seq $(name)
+	migrate create -ext sql -dir db/migrations -seq $(name)
 
 sqlc:
 	sqlc generate
@@ -49,4 +49,4 @@ evans:
 redis:
 	docker run --name redis -p 6379:6379 -d redis:7-alpine
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock migrateup1 migratedown1 proto evans redis
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock migrateup1 migratedown1 proto evans redis new_migration
