@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	RBD_CreateUser_FullMethodName = "/pb.RBD/CreateUser"
-	RBD_UpdateUser_FullMethodName = "/pb.RBD/UpdateUser"
-	RBD_LoginUser_FullMethodName  = "/pb.RBD/LoginUser"
+	RBD_CreateUser_FullMethodName  = "/pb.RBD/CreateUser"
+	RBD_UpdateUser_FullMethodName  = "/pb.RBD/UpdateUser"
+	RBD_LoginUser_FullMethodName   = "/pb.RBD/LoginUser"
+	RBD_VerifyEmail_FullMethodName = "/pb.RBD/VerifyEmail"
 )
 
 // RBDClient is the client API for RBD service.
@@ -31,6 +32,7 @@ type RBDClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error)
+	VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error)
 }
 
 type rBDClient struct {
@@ -68,6 +70,15 @@ func (c *rBDClient) LoginUser(ctx context.Context, in *LoginUserRequest, opts ..
 	return out, nil
 }
 
+func (c *rBDClient) VerifyEmail(ctx context.Context, in *VerifyEmailRequest, opts ...grpc.CallOption) (*VerifyEmailResponse, error) {
+	out := new(VerifyEmailResponse)
+	err := c.cc.Invoke(ctx, RBD_VerifyEmail_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RBDServer is the server API for RBD service.
 // All implementations must embed UnimplementedRBDServer
 // for forward compatibility
@@ -75,6 +86,7 @@ type RBDServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error)
+	VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error)
 	mustEmbedUnimplementedRBDServer()
 }
 
@@ -90,6 +102,9 @@ func (UnimplementedRBDServer) UpdateUser(context.Context, *UpdateUserRequest) (*
 }
 func (UnimplementedRBDServer) LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginUser not implemented")
+}
+func (UnimplementedRBDServer) VerifyEmail(context.Context, *VerifyEmailRequest) (*VerifyEmailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyEmail not implemented")
 }
 func (UnimplementedRBDServer) mustEmbedUnimplementedRBDServer() {}
 
@@ -158,6 +173,24 @@ func _RBD_LoginUser_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RBD_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RBDServer).VerifyEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RBD_VerifyEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RBDServer).VerifyEmail(ctx, req.(*VerifyEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RBD_ServiceDesc is the grpc.ServiceDesc for RBD service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -176,6 +209,10 @@ var RBD_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LoginUser",
 			Handler:    _RBD_LoginUser_Handler,
+		},
+		{
+			MethodName: "VerifyEmail",
+			Handler:    _RBD_VerifyEmail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
