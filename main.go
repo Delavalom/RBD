@@ -13,6 +13,7 @@ import (
 	"github.com/Delavalom/RBD/api"
 	db "github.com/Delavalom/RBD/db/sqlc"
 	"github.com/Delavalom/RBD/gapi"
+	"github.com/Delavalom/RBD/mail"
 	"github.com/Delavalom/RBD/pb"
 	"github.com/Delavalom/RBD/util"
 	"github.com/Delavalom/RBD/worker"
@@ -66,7 +67,8 @@ func runDBMigration(migrationURL, dbSource string) {
 }
 
 func runTaskProcessor(config util.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+	mailer := mail.NewGmailSender(config.EmailSenderName, config.EmailSenderAddress, config.EmailSenderPassword)
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 	log.Info().Msg("start task processor")
 	err := taskProcessor.Start()
 	if err != nil {
