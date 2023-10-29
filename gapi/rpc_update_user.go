@@ -2,6 +2,7 @@ package gapi
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	db "github.com/Delavalom/RBD/db/sqlc"
@@ -56,8 +57,7 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 
 	user, err := server.store.UpdateUser(ctx, arg)
 	if err != nil {
-		errCode := db.ErrorCode(err)
-		if errCode == db.ErrRecordNotFound.Error() {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "user not found")
 		}
 		return nil, status.Errorf(codes.Internal, "failed to update user: %s", err)
