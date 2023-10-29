@@ -26,7 +26,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 		return nil, status.Errorf(codes.Internal, "failed to find user: %s", err)
 	}
 
-	err = util.CheckPassword(req.Password, user.HashedPassword)
+	err = util.CheckPassword(req.GetPassword(), user.HashedPassword)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "incorrect password: %s", err)
 	}
