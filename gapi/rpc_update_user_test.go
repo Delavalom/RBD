@@ -18,11 +18,12 @@ import (
 )
 
 func TestUpdateUserAPI(t *testing.T) {
-	user, _ := randomUser(t)
+	user, _ := randomUser(t, util.DepositorRole)
+	other, _ := randomUser(t, util.DepositorRole)
+	banker, _ := randomUser(t, util.BankerRole)
 
 	newName := util.RandomOwner()
-	newMail := util.RandomEmail()
-
+	newEmail := util.RandomEmail()
 	invalidEmail := "invalid-email"
 
 	testCases := []struct {
@@ -37,7 +38,7 @@ func TestUpdateUserAPI(t *testing.T) {
 			req: &pb.UpdateUserRequest{
 				Username: user.Username,
 				FullName: &newName,
-				Email:    &newMail,
+				Email:    &newEmail,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.UpdateUserParams{
@@ -47,7 +48,7 @@ func TestUpdateUserAPI(t *testing.T) {
 						Valid:  true,
 					},
 					Email: pgtype.Text{
-						String: newMail,
+						String: newEmail,
 						Valid:  true,
 					},
 				}
@@ -55,7 +56,7 @@ func TestUpdateUserAPI(t *testing.T) {
 					Username:          user.Username,
 					HashedPassword:    user.HashedPassword,
 					FullName:          newName,
-					Email:             newMail,
+					Email:             newEmail,
 					PasswordChangedAt: user.PasswordChangedAt,
 					CreatedAt:         user.CreatedAt,
 					IsEmailVerified:   user.IsEmailVerified,
@@ -66,7 +67,7 @@ func TestUpdateUserAPI(t *testing.T) {
 					Return(updatedUser, nil)
 			},
 			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
-				return newContextWithBearerToken(t, tokenMaker, user.Username, time.Minute)
+				return newContextWithBearerToken(t, tokenMaker, user.Username, user.Role, time.Minute)
 			},
 			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
 				require.NoError(t, err)
@@ -74,7 +75,74 @@ func TestUpdateUserAPI(t *testing.T) {
 				updatedUser := res.GetUser()
 				require.Equal(t, user.Username, updatedUser.Username)
 				require.Equal(t, newName, updatedUser.FullName)
-				require.Equal(t, newMail, updatedUser.Email)
+				require.Equal(t, newEmail, updatedUser.Email)
+			},
+		},
+		{
+			name: "BankerCanUpdateUserInfo",
+			req: &pb.UpdateUserRequest{
+				Username: user.Username,
+				FullName: &newName,
+				Email:    &newEmail,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.UpdateUserParams{
+					Username: user.Username,
+					FullName: pgtype.Text{
+						String: newName,
+						Valid:  true,
+					},
+					Email: pgtype.Text{
+						String: newEmail,
+						Valid:  true,
+					},
+				}
+				updatedUser := db.User{
+					Username:          user.Username,
+					HashedPassword:    user.HashedPassword,
+					FullName:          newName,
+					Email:             newEmail,
+					PasswordChangedAt: user.PasswordChangedAt,
+					CreatedAt:         user.CreatedAt,
+					IsEmailVerified:   user.IsEmailVerified,
+				}
+				store.EXPECT().
+					UpdateUser(gomock.Any(), gomock.Eq(arg)).
+					Times(1).
+					Return(updatedUser, nil)
+			},
+			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
+				return newContextWithBearerToken(t, tokenMaker, banker.Username, banker.Role, time.Minute)
+			},
+			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
+				require.NoError(t, err)
+				require.NotNil(t, res)
+				updatedUser := res.GetUser()
+				require.Equal(t, user.Username, updatedUser.Username)
+				require.Equal(t, newName, updatedUser.FullName)
+				require.Equal(t, newEmail, updatedUser.Email)
+			},
+		},
+		{
+			name: "OtherDepositorCannotUpdateThisUserInfo",
+			req: &pb.UpdateUserRequest{
+				Username: user.Username,
+				FullName: &newName,
+				Email:    &newEmail,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					UpdateUser(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
+				return newContextWithBearerToken(t, tokenMaker, other.Username, other.Role, time.Minute)
+			},
+			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
+				require.Error(t, err)
+				st, ok := status.FromError(err)
+				require.True(t, ok)
+				require.Equal(t, codes.PermissionDenied, st.Code())
 			},
 		},
 		{
@@ -82,7 +150,7 @@ func TestUpdateUserAPI(t *testing.T) {
 			req: &pb.UpdateUserRequest{
 				Username: user.Username,
 				FullName: &newName,
-				Email:    &newMail,
+				Email:    &newEmail,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -91,7 +159,7 @@ func TestUpdateUserAPI(t *testing.T) {
 					Return(db.User{}, db.ErrRecordNotFound)
 			},
 			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
-				return newContextWithBearerToken(t, tokenMaker, user.Username, time.Minute)
+				return newContextWithBearerToken(t, tokenMaker, user.Username, user.Role, time.Minute)
 			},
 			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
 				require.Error(t, err)
@@ -113,7 +181,7 @@ func TestUpdateUserAPI(t *testing.T) {
 					Times(0)
 			},
 			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
-				return newContextWithBearerToken(t, tokenMaker, user.Username, time.Minute)
+				return newContextWithBearerToken(t, tokenMaker, user.Username, user.Role, time.Minute)
 			},
 			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
 				require.Error(t, err)
@@ -127,7 +195,7 @@ func TestUpdateUserAPI(t *testing.T) {
 			req: &pb.UpdateUserRequest{
 				Username: user.Username,
 				FullName: &newName,
-				Email:    &newMail,
+				Email:    &newEmail,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -135,7 +203,7 @@ func TestUpdateUserAPI(t *testing.T) {
 					Times(0)
 			},
 			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
-				return newContextWithBearerToken(t, tokenMaker, user.Username, -time.Minute)
+				return newContextWithBearerToken(t, tokenMaker, user.Username, user.Role, -time.Minute)
 			},
 			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
 				require.Error(t, err)
@@ -149,7 +217,7 @@ func TestUpdateUserAPI(t *testing.T) {
 			req: &pb.UpdateUserRequest{
 				Username: user.Username,
 				FullName: &newName,
-				Email:    &newMail,
+				Email:    &newEmail,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
